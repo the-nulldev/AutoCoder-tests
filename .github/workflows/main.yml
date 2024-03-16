@@ -1,6 +1,6 @@
 name: A workflow to say hello
 
-on: [ workflow_dispatch ]
+on: [ push ]
 
 jobs:
   say_hello:
