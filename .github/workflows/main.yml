@@ -1,8 +1,13 @@
 name: A workflow to for AutoCoder
 
+# the workflow runs on issues opened or reopened and the issue hasa label of 'autocoder-bot'
 on:
-  issues:
-    types: [opened, reopened]
+    issues:
+        types: [opened, reopened]
+        tags:
+        - autocoder-bot
+
+
 
 jobs:
   echo-issue-content:
