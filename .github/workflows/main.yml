@@ -2,7 +2,9 @@ name: A workflow to for AutoCoder
 
 on:
     issues:
-        types: [opened, reopened]
+        types:
+            - opened
+            - reopened
 
 
 jobs:
