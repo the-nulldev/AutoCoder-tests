@@ -1,12 +1,17 @@
-name: A workflow to say hello
+name: A workflow to for AutoCoder
 
-on: [ push ]
+on:
+  issues:
+    types: [opened, reopened]
 
 jobs:
-  say_hello:
+  echo-issue-content:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Say Hello
-      run: echo "Hello, world!"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Echo issue content
+        run: |
+          echo "Issue Title: ${{ github.event.issue.title }}"
+          echo "Issue Body: ${{ github.event.issue.body }}"
