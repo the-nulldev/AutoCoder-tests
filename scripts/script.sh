@@ -26,6 +26,6 @@ if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; 
         -H "Content-Type: application/json" \
         -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 4096}")
 
-    # Print the response from ChatGPT
-    echo "Response from ChatGPT: $RESPONSE"
+    # Parse the response from gpt to only provide the response
+    RESPONSE=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
 fi
