@@ -17,7 +17,7 @@ if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; 
     "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER" | jq -r .body)
 
     # Send the issue content to ChatGPT (OpenAI API)
-    RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/completions" \
+    RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
         -H "Authorization: Bearer $OPENAI_API_KEY" \
         -H "Content-Type: application/json" \
         -d "{\"model\": \"gpt-3.5-turbo\", \"prompt\": \"$ISSUE_BODY\", \"max_tokens\": 1000}")
