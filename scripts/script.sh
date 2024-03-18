@@ -16,15 +16,16 @@ if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; 
     ISSUE_BODY=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
     "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER" | jq -r .body)
 
-    # Prepare the prompt for the Codex API, including context from the issue body and repository files if needed
-    PROMPT="I have the following repository $REPOSITORY. Can you help me generate files as per the issue body below?\n\n$ISSUE_BODY"
+    # Prepare the messages array for the ChatGPT API
+    # You may include other messages to provide context or instructions
+    MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $body}]')
 
-    # Send the prompt to the Codex model (OpenAI API)
-    RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/completions" \
+    # Send the issue content to the ChatGPT model (OpenAI API)
+    RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
         -H "Authorization: Bearer $OPENAI_API_KEY" \
         -H "Content-Type: application/json" \
-        -d "{\"model\": \"code-davinci-002\", \"prompt\": \"$PROMPT\", \"max_tokens\": 1500}")
+        -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 4096}")
 
-    # Print the response from Codex
-    echo "Response from Codex: $RESPONSE"
+    # Print the response from ChatGPT
+    echo "Response from ChatGPT: $RESPONSE"
 fi
