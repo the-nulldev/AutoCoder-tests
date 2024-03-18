@@ -1,21 +1,30 @@
-name: A workflow to for AutoCoder
+name: Issue Interaction with ChatGPT
 
 on:
-    issues:
-        types:
-            - opened
-            - reopened
-
+  issues:
+    types:
+      - opened
+      - reopened
+      - labeled
 
 jobs:
-  echo-issue-content:
+  interact-with-chatgpt:
     runs-on: ubuntu-latest
     if: contains(github.event.issue.labels.*.name, 'autocoder-bot')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Echo issue content
-        run: |
-          echo "Issue Title: ${{ github.event.issue.title }}"
-          echo "Issue Body: ${{ github.event.issue.body }}"
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Make script executable
+        run: chmod +x ./scripts/autocoder_bot.sh
+
+      - name: Run interaction script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: bash ./scripts/autocoder_bot.sh "${{ secrets.GITHUB_TOKEN }}" "${{ github.repository }}" "${{ github.event.issue.number }}" "${{ secrets.OPENAI_API_KEY }}"
