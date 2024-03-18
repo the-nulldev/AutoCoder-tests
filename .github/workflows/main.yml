@@ -35,4 +35,7 @@ jobs:
           name: output
           path: output.txt
 
+      - name: Echo output
+        run: cat output.txt
+
 
