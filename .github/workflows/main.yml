@@ -10,6 +10,8 @@ on:
 jobs:
   interact-with-chatgpt:
     runs-on: ubuntu-latest
+    outputs:
+      issue_number: ${{ github.event.issue.number }}
     if: contains(github.event.issue.labels.*.name, 'autocoder-bot')
     steps:
       - name: Checkout repository
@@ -27,7 +29,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: ./scripts/script.sh $GITHUB_TOKEN $REPOSITORY $ISSUE_NUMBER $OPENAI_API_KEY | tee output.txt
+        run: ./scripts/script.sh "$GITHUB_TOKEN" "$REPOSITORY" "$ISSUE_NUMBER" "$OPENAI_API_KEY" | tee output.txt
 
       - name: Upload output to issue
         uses: actions/upload-artifact@v4
@@ -35,7 +37,22 @@ jobs:
           name: output
           path: output.txt
 
-      - name: Echo output
-        run: cat output.txt
+  add-comment:
+    needs: interact-with-chatgpt
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: output
+          path: artifact
 
-
+      - name: Add comment to issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ needs.interact-with-chatgpt.outputs.issue_number }}
+        run: |
+          COMMENT_BODY=$(cat artifact/output.txt)
+          curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            -X POST -d "{\"body\": \"```\n$COMMENT_BODY\n```\"}" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${ISSUE_NUMBER}/comments"
