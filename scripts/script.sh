@@ -34,6 +34,8 @@ if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; 
     # Extract the code, removing the first line that contains the filename
     CODE=$(echo "$CONTENT" | sed '1d')
 
-
+    # return the file name and the code to the GitHub Actions worflow as an output
+    echo "::set-output name=filename::$FILENAME"
+    echo "::set-output name=code::$CODE"
 
 fi
