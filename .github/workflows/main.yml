@@ -30,8 +30,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run : ./scripts/script.sh $GITHUB_TOKEN $OPENAI_API_KEY $ISSUE_NUMBER $GITHUB_REPOSITORY
-        shell: bash
+        run : ./scripts/script.sh "$GITHUB_TOKEN" "$OPENAI_API_KEY" "$ISSUE_NUMBER" "$GITHUB_REPOSITORY"
 
       - id: create-file
         name: Create output file
