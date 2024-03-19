@@ -10,6 +10,12 @@ OPENAI_API_KEY="$4"
 LABELS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
 "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER/labels")
 
+# Check if the API response is valid JSON
+if ! echo "$LABELS" | jq empty; then
+    echo "Error: Invalid API response"
+    exit 1
+fi
+
 # Check if the issue has the autocoder-bot label
 if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; then
     # get issue body
