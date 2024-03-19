@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# Get inputs from the environment
-"$GITHUB_TOKEN" ="$1"
-"$OPENAI_API_KEY" ="$2"
-"$ISSUE_NUMBER"="$3"
-"$GITHUB_REPOSITORY"="$4"
-
 # Get the issue labels using the GitHub API
 LABELS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
 "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER/labels")
@@ -40,8 +34,6 @@ if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; 
     # Extract the code, removing the first line that contains the filename
     CODE=$(echo "$CONTENT" | sed '1d')
 
-    # return the file to the workflow for further processing
-    echo "::set-output name=filename::$FILENAME"
-    echo "::set-output name=code::$CODE"
+
 
 fi
