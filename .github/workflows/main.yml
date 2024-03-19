@@ -25,12 +25,21 @@ jobs:
 
       - id: run-script
         name: Run interaction script
-        run :
-          ./scripts/script.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run : ./scripts/script.sh $GITHUB_TOKEN $OPENAI_API_KEY $ISSUE_NUMBER $GITHUB_REPOSITORY
         shell: bash
+
+      - id: create-file
+        name: Create output file
+        run: echo ${{ steps.run-script.outputs.code }} > ${{ steps.run-script.outputs.filename }}
 
       - name: Upload output as an artifact
         uses: actions/upload-artifact@v4
+        needs: create-file
         with:
           name: output
           path: ${{ steps.run-script.outputs.filename }}
