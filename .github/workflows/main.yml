@@ -24,7 +24,7 @@ jobs:
         run: chmod +x ./scripts/script.sh
 
       - name: Run interaction script
-        run : ./scripts/script.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.event.issue.number }} ${{ github.event.issue.title }} ${{ github.event.issue.body }}
+        run : ./scripts/script.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.event.issue.number }} ${{ github.event.issue.body }} ${{ github.repository }} ${{ secrets.OPENAI_API_KEY }}
 
       - name: Upload output as an artifact
         uses: actions/upload-artifact@v4
