@@ -31,9 +31,6 @@ if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; 
     # Extract the code, removing the first line that contains the filename
     CODE=$(echo "$CONTENT" | sed '1d')
 
-    # Store the code in a file with the extracted filename
-    echo "$CODE" > "$FILENAME"
-
     # return the file to the workflow for further processing
     echo "::set-output name=filename::$FILENAME"
     echo "::set-output name=code::$CODE"

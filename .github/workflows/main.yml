@@ -25,10 +25,9 @@ jobs:
 
       - id: run-script
         name: Run interaction script
-        run : |
-          OUTPUT=$(./scripts/script.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.event.issue.number }} ${{ github.event.issue.body }} ${{ github.repository }} ${{ secrets.OPENAI_API_KEY }})
-          echo "::set-output name=filename::$(echo "$OUTPUT" | jq -r '.filename')"
-          echo "::set-output name=code::$(echo "$OUTPUT" | jq -r '.code')"
+        run :
+          ./scripts/script.sh
+        shell: bash
 
       - name: Upload output as an artifact
         uses: actions/upload-artifact@v4
