@@ -6,13 +6,16 @@ GITHUB_REPOSITORY="$2"
 ISSUE_NUMBER="$3"
 OPENAI_API_KEY="$4"
 
-
 # Get the issue labels using the GitHub API
 LABELS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
 "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER/labels")
 
 # Check if the issue has the autocoder-bot label
 if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; then
+    # get issue body
+    ISSUE_BODY=$(curl -s -H "Authorization : token $GITHUB_TOKEN" \
+    "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER" | jq -r '.body')
+
     # Prepare the messages array for the ChatGPT API
     MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $body}]')
 
