@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Get inputs from the environment
-GITHUB_TOKEN="$1"
-GITHUB_REPOSITORY="$2"
-ISSUE_NUMBER="$3"
-OPENAI_API_KEY="$4"
+"$GITHUB_TOKEN" ="$1"
+"$OPENAI_API_KEY" ="$2"
+"$ISSUE_NUMBER"="$3"
+"$GITHUB_REPOSITORY"="$4"
 
 # Get the issue labels using the GitHub API
 LABELS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
