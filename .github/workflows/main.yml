@@ -23,14 +23,18 @@ jobs:
       - name: Make script executable
         run: chmod +x ./scripts/script.sh
 
-      - name: Run interaction script
-        run : ./scripts/script.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.event.issue.number }} ${{ github.event.issue.body }} ${{ github.repository }} ${{ secrets.OPENAI_API_KEY }}
+      - id: run-script
+        name: Run interaction script
+        run : |
+          OUTPUT=$(./scripts/script.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.event.issue.number }} ${{ github.event.issue.body }} ${{ github.repository }} ${{ secrets.OPENAI_API_KEY }})
+          echo "::set-output name=filename::$(echo "$OUTPUT" | jq -r '.filename')"
+          echo "::set-output name=code::$(echo "$OUTPUT" | jq -r '.code')"
 
       - name: Upload output as an artifact
         uses: actions/upload-artifact@v4
         with:
           name: output
-          path: output.txt
+          path: ${{ steps.run-script.outputs.filename }}
 
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -39,4 +43,14 @@ jobs:
           path: artifact
 
       - name: Read output
-        run: cat artifact/output.txt
+        run: cat artifact/${{ steps.run-script.outputs.filename }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Add output file from ChatGPT"
+          branch: autocoder-branch
+          title: "Pull request from autocoder-bot"
+          body: "This PR contains the output file from ChatGPT."
+          path: artifact/${{ steps.run-script.outputs.filename }}

@@ -5,7 +5,6 @@ GITHUB_TOKEN="$1"
 GITHUB_REPOSITORY="$2"
 ISSUE_NUMBER="$3"
 OPENAI_API_KEY="$4"
-ISSUE_BODY = "$5"
 
 
 # Get the issue labels using the GitHub API
@@ -32,5 +31,11 @@ if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; 
     # Extract the code, removing the first line that contains the filename
     CODE=$(echo "$CONTENT" | sed '1d')
 
-   echo "Code from ChatGPT: $CODE"
+    # Store the code in a file with the extracted filename
+    echo "$CODE" > "$FILENAME"
+
+    # return the file to the workflow for further processing
+    echo "::set-output name=filename::$FILENAME"
+    echo "::set-output name=code::$CODE"
+
 fi
