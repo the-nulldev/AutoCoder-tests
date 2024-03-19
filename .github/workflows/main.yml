@@ -24,14 +24,9 @@ jobs:
         run: chmod +x ./scripts/script.sh
 
       - name: Run interaction script
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY: ${{ github.repository }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: ./scripts/script.sh "$GITHUB_TOKEN" "$REPOSITORY" "$ISSUE_NUMBER" "$OPENAI_API_KEY" | tee output.txt
+        run : ./scripts/script.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.event.issue.number }} ${{ github.event.issue.title }} ${{ github.event.issue.body }}
 
-      - name: Upload output to issue
+      - name: Upload output as an artifact
         uses: actions/upload-artifact@v4
         with:
           name: output
@@ -43,12 +38,5 @@ jobs:
           name: output
           path: artifact
 
-      - name: Add comment to issue
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ISSUE_NUMBER: ${{ needs.interact-with-chatgpt.outputs.issue_number }}
-        run: |
-          COMMENT_BODY=$(cat artifact/output.txt)
-          curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            -X POST -d "{\"body\": \"```\n$COMMENT_BODY\n```\"}" \
-            "https://api.github.com/repos/${{ github.repository }}/issues/${ISSUE_NUMBER}/comments"
+      - name: Read output
+        run: cat artifact/output.txt
