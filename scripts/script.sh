@@ -48,12 +48,12 @@ set -e
 # GitHub repository and issue number are provided as arguments
 REPO=$1
 ISSUE_NUMBER=$2
-GITHUB_TOKEN=$3
+PERSONAL_ACCESS_TOKEN=$3
 OPENAI_API_KEY=$4
 
 # Fetch issue description from GitHub API
 echo "Fetching issue description from GitHub..."
-ISSUE_DESCRIPTION=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+ISSUE_DESCRIPTION=$(curl -s -H "Authorization: token $PERSONAL_ACCESS_TOKEN" \
 "https://api.github.com/repos/$REPO/issues/$ISSUE_NUMBER" | jq -r .body)
 
 # Prepare the prompt for OpenAI API
@@ -107,7 +107,7 @@ git push origin "$BRANCH_NAME"
 
 # Open a pull request
 echo "Opening a pull request..."
-PR_RESPONSE=$(curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
+PR_RESPONSE=$(curl -s -X POST -H "Authorization: token $PERSONAL_ACCESS_TOKEN" \
     -d "{\"title\": \"Auto-generated files for issue #$ISSUE_NUMBER\", \"head\": \"$BRANCH_NAME\", \"base\": \"main\"}" \
     "https://api.github.com/repos/$REPO/pulls")
 
