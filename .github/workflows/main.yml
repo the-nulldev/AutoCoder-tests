@@ -23,6 +23,6 @@ jobs:
 
       - name: Run interaction script
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run :  ./scripts/script.sh ${{ github.repository }} ${{ github.event.issue.number }} ${{ secrets.PERSONAL_ACCESS_TOKEN }} ${{ secrets.OPENAI_API_KEY }}
+        run :  ./scripts/script.sh ${{ github.repository }} ${{ github.event.issue.number }} ${{ secrets.GITHUB_TOKEN }} ${{ secrets.OPENAI_API_KEY }}
