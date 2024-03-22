@@ -27,12 +27,6 @@ if [ -z "${GITHUB_TOKEN}" ] || [ -z "${REPOSITORY}" ] || [ -z "${ISSUE_NUMBER}" 
   exit 1
 fi
 
-# Ensure jq is installed
-if ! command -v jq &> /dev/null; then
-    echo "jq could not be found. Please install jq to run this script."
-    exit 1
-fi
-
 # Function to ensure directory exists
 ensure_directory() {
     directory=$(dirname "$1")
@@ -71,6 +65,7 @@ openai_call() {
             ],
             \"max_tokens\": ${max_tokens}
         }")
+    echo "OpenAI API Response: $response"
     if [ $? -ne 0 ]; then
         echo "Failed to make OpenAI API call"
         exit 1
@@ -78,12 +73,15 @@ openai_call() {
     echo "${response}" | jq -r '.choices[0].message.content | rtrimstr("\n")'
 }
 
-# Get the prompt from GitHub issue
-prompt=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" "${GITHUB_ISSUE_URL}" | jq -r '.body')
+response=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" "${GITHUB_ISSUE_URL}")
 if [ $? -ne 0 ]; then
     echo "Failed to fetch GitHub issue"
     exit 1
 fi
+
+echo "GitHub API Response: $response"
+
+prompt=$(echo "$response" | jq -r '.body')
 
 # Get file requirements
 raw_output=$(openai_call "${prompt}" "${MODEL_NAME}" "${MAX_TOKENS}")
