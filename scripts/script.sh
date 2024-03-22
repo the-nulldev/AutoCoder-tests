@@ -91,7 +91,7 @@ echo "$GENERATED_CONTENT" | while read -r line; do
 done
 
 # Create a new branch
-BRANCH_NAME="autocode-$ISSUE_NUMBER-$(date +%s)"
+BRANCH_NAME="autocoder-branch"
 git checkout -b "$BRANCH_NAME"
 
 # Add and commit changes

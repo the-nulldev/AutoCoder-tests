@@ -19,7 +19,7 @@ jobs:
         run: sudo apt-get install -y jq
 
       - name: Make script executable
-        run: chmod +x ./generate_code.sh
+        run: chmod +x ./scripts/script.sh
 
       - name: Run interaction script
         env:
