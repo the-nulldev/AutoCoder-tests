@@ -16,7 +16,7 @@ REPOSITORY="$2"
 ISSUE_NUMBER="$3"
 OPENAI_API_KEY="$4"
 MODEL_NAME="${5:-gpt-3.5-turbo}"
-MAX_TOKENS="${6:-300}"
+MAX_TOKENS="${6:-1024}"
 
 # Define the GitHub issue URL
 GITHUB_ISSUE_URL="https://api.github.com/repos/${REPOSITORY}/issues/${ISSUE_NUMBER}"
@@ -103,7 +103,7 @@ echo "GitHub API Response: $response"
 prompt=$(echo "$response" | jq -r '.body')
 
 # Get file requirements
-raw_output=$(openai_call "${prompt}" "${MODEL_NAME}" "${MAX_TOKENS}")
+raw_output=$(echo "${prompt}" | jq -r 'if . | startswith("```json") then split("\n") | .[1:-2] | join("\n") else empty end')
 echo "Raw Output: $raw_output"
 files_and_requirements=$(validate_dict_output "${raw_output}")
 if [[ $? -ne 0 ]]; then
