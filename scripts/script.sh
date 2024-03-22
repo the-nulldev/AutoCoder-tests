@@ -95,7 +95,7 @@ git config --global user.name "runner"
 git config --global user.email "runner@example.com"
 
 # Create a new branch
-BRANCH_NAME="autocoder-branch"
+BRANCH_NAME="autocode-$ISSUE_NUMBER-$(date +%s)"
 git checkout -b "$BRANCH_NAME"
 
 # Add and commit changes
