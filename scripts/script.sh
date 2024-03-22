@@ -90,6 +90,10 @@ echo "$GENERATED_CONTENT" | while read -r line; do
     echo -e "$CONTENT" > "$FILE_PATH"
 done
 
+# add configs
+git config --global user.name "runner"
+git config --global user.email "runner@example.com"
+
 # Create a new branch
 BRANCH_NAME="autocoder-branch"
 git checkout -b "$BRANCH_NAME"
