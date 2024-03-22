@@ -54,17 +54,30 @@ openai_call() {
     prompt="$1"
     model_name="$2"
     max_tokens="$3"
+
+    # Check if the prompt is valid JSON
+    echo "${prompt}" | jq empty > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Invalid JSON prompt"
+        exit 1
+    fi
+
+    data=$(jq -n \
+        --arg model_name "$model_name" \
+        --arg prompt "$prompt" \
+        --argjson max_tokens "$max_tokens" \
+        '{
+            "model": $model_name,
+            "messages": [
+                {"role": "system", "content": "You are a script that helps set up a Repository with initial files."},
+                {"role": "user", "content": $prompt}
+            ],
+            "max_tokens": $max_tokens
+        }')
     response=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer ${OPENAI_API_KEY}" \
-        -d "{
-            \"model\": \"${model_name}\",
-            \"messages\": [
-                {\"role\": \"system\", \"content\": \"You are a script that helps set up a Repository with initial files.\"},
-                {\"role\": \"user\", \"content\": \"${prompt}\"}
-            ],
-            \"max_tokens\": ${max_tokens}
-        }")
+        -d "$data")
     echo "OpenAI API Response: $response"
     if [ $? -ne 0 ]; then
         echo "Failed to make OpenAI API call"
