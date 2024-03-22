@@ -25,4 +25,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run :  ./scripts/script.sh ${{ github.repository }} ${{ github.event.issue.number }} ${{ secrets.GITHUB_TOKEN }} ${{ secrets.OPENAI_API_KEY }}
+        run :  ./scripts/script.sh  ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.issue.number }} ${{ secrets.OPENAI_API_KEY }}
