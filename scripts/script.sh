@@ -70,6 +70,12 @@ openai_call() {
         echo "Failed to make OpenAI API call"
         exit 1
     fi
+    # Check if the response is valid JSON
+    echo "${response}" | jq empty
+    if [ $? -ne 0 ]; then
+        echo "Invalid JSON response from OpenAI API"
+        exit 1
+    fi
     echo "${response}" | jq -r '.choices[0].message.content | rtrimstr("\n")'
 }
 
