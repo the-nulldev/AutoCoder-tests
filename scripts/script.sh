@@ -91,6 +91,7 @@ prompt=$(echo "$response" | jq -r '.body')
 
 # Get file requirements
 raw_output=$(openai_call "${prompt}" "${MODEL_NAME}" "${MAX_TOKENS}")
+echo "Raw Output: $raw_output"
 files_and_requirements=$(validate_dict_output "${raw_output}")
 if [[ $? -ne 0 ]]; then
     echo "Invalid file requirements dictionary. Exiting."
