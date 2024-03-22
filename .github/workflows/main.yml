@@ -10,8 +10,6 @@ on:
 jobs:
   interact-with-chatgpt:
     runs-on: ubuntu-latest
-    outputs:
-      issue_number: ${{ github.event.issue.number }}
     if: contains(github.event.issue.labels.*.name, 'autocoder-bot')
     steps:
       - name: Checkout repository
@@ -21,42 +19,10 @@ jobs:
         run: sudo apt-get install -y jq
 
       - name: Make script executable
-        run: chmod +x ./scripts/script.sh
+        run: chmod +x ./generate_code.sh
 
-      - id: run-script
-        name: Run interaction script
+      - name: Run interaction script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run : ./scripts/script.sh "$GITHUB_TOKEN" "$OPENAI_API_KEY" "$ISSUE_NUMBER" "$GITHUB_REPOSITORY"
-
-      - id: create-file
-        name: Create output file
-        run: echo ${{ steps.run-script.outputs.code }} > ${{ steps.run-script.outputs.filename }}
-
-      - name: Upload output as an artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: output
-          path: ${{ steps.run-script.outputs.filename }}
-
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: output
-          path: artifact
-
-      - name: Read output
-        run: cat artifact/${{ steps.run-script.outputs.filename }}
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Add output file from ChatGPT"
-          branch: autocoder-branch
-          title: "Pull request from autocoder-bot"
-          body: "This PR contains the output file from ChatGPT."
-          path: artifact/${{ steps.run-script.outputs.filename }}
+        run : ./generate_code.sh ${{ github.repository }} ${{ github.event.issue.number }} ${{ secrets.GITHUB_TOKEN }} ${{ secrets.OPENAI_API_KEY }}
