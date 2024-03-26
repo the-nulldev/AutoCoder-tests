@@ -19,6 +19,12 @@ if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; 
     # Prepare the messages array for the ChatGPT API
     MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $body}]')
 
+    # Define the system prompt
+    SYSTEM_PROMPT='{"role": "system", "content": "Return the code as filename.ext: followed by the code itself in backticks."}'
+
+    # Include the system prompt in the MESSAGES_JSON
+    MESSAGES_JSON=$(jq --argjson system_prompt "$SYSTEM_PROMPT" '. |= [$system_prompt] + .' <<< "$MESSAGES_JSON")
+
     # Send the issue content to the ChatGPT model (OpenAI API)
     RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
         -H "Authorization: Bearer $OPENAI_API_KEY" \
