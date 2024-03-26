@@ -20,7 +20,7 @@ if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; 
     MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $body}]')
 
     # Define the system prompt
-    SYSTEM_PROMPT='{"role": "system", "content": "Return the code as filename.ext: followed by the code itself in backticks."}'
+    SYSTEM_PROMPT='{"role": "system", "content": "Return the code with the first line as `filename.ext` followed by the code itself wrapped in backticks."}'
 
     # Include the system prompt in the MESSAGES_JSON
     MESSAGES_JSON=$(jq --argjson system_prompt "$SYSTEM_PROMPT" '. |= [$system_prompt] + .' <<< "$MESSAGES_JSON")
