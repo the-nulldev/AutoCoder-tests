@@ -28,18 +28,11 @@ if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; 
     # Extract the content from the assistant's message
     CONTENT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
 
-    # Splitting the CONTENT into an array of code snippets
-    IFS=$'\n' read -d '' -r -a snippets <<< "$CONTENT"
+    FILENAME=$(echo "$ISSUE_BODY" | grep -oP '(?<=```python\n).*(?=\n```)')
 
-    # Loop through the snippets and save them to files
-    for snippet in "${snippets[@]}"; do
-        # Use a regex to extract the filename which is expected to follow the pattern "X. filename.ext"
-        if [[ $snippet =~ ^([0-9]+)\.\ ([^\ ]+\.[^\ ]+) ]]; then
-            FILENAME=${BASH_REMATCH[2]}
-            # Remove the first line (which contains the filename) from the snippet
-            CODE=$(echo "$snippet" | sed '1d')
-            # Save the code to a file
-            echo "$CODE" > "$FILENAME"
-        fi
-    done
+    # copy the code to the file
+    echo "$CONTENT" > "$FILENAME"
+
+    echo "The code has been written to $FILENAME"
+
 fi
