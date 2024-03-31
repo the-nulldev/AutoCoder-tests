@@ -17,16 +17,3 @@ jobs:
 
       - name: Run interaction script
         run: ./scripts/script.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.issue.number }} ${{ secrets.OPENAI_API_KEY }}
-
-      - name: Create pull request
-        if: success()
-        uses: peter-evans/create-pull-request@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'Add code snippets from issue'
-          title: 'Add code snippets from issue #${{ github.event.issue.number }}'
-          body: 'This PR adds code snippets generated from issue #${{ github.event.issue.number }}.'
-          branch: "autocoder/${{ github.event.issue.number }}"
-          base: 'main'
-          labels: 'autocoder'
-          draft: false
