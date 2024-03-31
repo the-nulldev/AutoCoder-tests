@@ -35,4 +35,21 @@ if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; 
     CODE=$(echo "$CONTENT" | sed '1d')
 
    echo "Code from ChatGPT: $CODE"
+
+
+    # Create a new branch
+    git checkout -b autocoder-branch
+
+    # Create the code file
+    echo "$CODE" > "$FILENAME"
+
+    # Add the new file to the staging area
+    git add "$FILENAME"
+
+    # Commit the new file
+    git -c user.name='autocoder-bot' -c user.email='autocoder-bot@example.com' \
+    commit -m "Add code snippets to issue #$ISSUE_NUMBER"
+
+    # Push the new branch to the remote repository
+    git push origin autocoder-branch
 fi

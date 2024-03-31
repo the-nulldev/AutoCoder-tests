@@ -17,9 +17,32 @@ jobs:
 
       - name: Install jq
         run: sudo apt-get install -y jq
-
-      - name: Make script executable
-        run: chmod +x ./scripts/script.sh
-
       - name: Run interaction script
-        run :  ./scripts/script.sh  ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.issue.number }} ${{ secrets.OPENAI_API_KEY }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: ./scripts/script.sh
+
+  create-pull-request:
+    needs: interact-with-chatgpt
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: 'autocoder-branch'
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'Add code snippets to issue'
+          title: 'Add code snippets to issue'
+          body: 'This PR adds code snippets to the issue.'
+          branch: 'autocoder-branch'
+          base: 'main'
+          labels: 'code-snippet'
+          draft: false
