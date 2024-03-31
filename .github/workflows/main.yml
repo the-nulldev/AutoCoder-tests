@@ -41,7 +41,7 @@ jobs:
           commit-message: 'Add code snippets from issue'
           title: 'Add code snippets from issue #${{ github.event.issue.number }}'
           body: 'This PR adds code snippets generated from issue #${{ github.event.issue.number }}.'
-          branch: "autocoder/${{ github.event.issue.number }}"
+          branch: "autocoder/autocoder-branch"
           base: 'main'
           labels: 'autocoder'
           draft: false
