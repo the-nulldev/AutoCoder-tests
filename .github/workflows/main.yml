@@ -15,8 +15,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
       - name: Run interaction script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: ./scripts/script.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.issue.number }} ${{ secrets.OPENAI_API_KEY }}
+        run: ./scripts/script.sh
+
+      - name: Commit files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Add code snippets from issue #${{ github.event.issue.number }}" -a || echo "No changes to commit"
+          git push
+
+      - name: Create pull request
+        if: success()
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'Add code snippets from issue'
+          title: 'Add code snippets from issue #${{ github.event.issue.number }}'
+          body: 'This PR adds code snippets generated from issue #${{ github.event.issue.number }}.'
+          branch: "autocoder/${{ github.event.issue.number }}"
+          base: 'main'
+          labels: 'autocoder'
+          draft: false
