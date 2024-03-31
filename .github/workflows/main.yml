@@ -23,14 +23,6 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: ./scripts/script.sh
 
-      - name: Commit files
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          git commit -m "Add code snippets from issue #${{ github.event.issue.number }}" -a || echo "No changes to commit"
-          git push
-
       - name: Create pull request
         if: success()
         uses: peter-evans/create-pull-request@v3
