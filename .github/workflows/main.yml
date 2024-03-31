@@ -16,12 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run interaction script
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY: ${{ github.repository }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: ./scripts/script.sh
+        run: ./scripts/script.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} ${{ github.event.issue.number }} ${{ secrets.OPENAI_API_KEY }}
 
       - name: Create pull request
         if: success()
