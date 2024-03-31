@@ -34,5 +34,4 @@ if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; 
     echo "$CONTENT" > "$FILENAME"
 
     echo "The code has been written to $FILENAME"
-
 fi
