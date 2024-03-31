@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Get inputs from the environment
 GITHUB_TOKEN="$1"
 REPOSITORY="$2"
 ISSUE_NUMBER="$3"
@@ -27,18 +28,28 @@ if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; 
     # Extract the content from the assistant's message
     CONTENT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
 
-    # Splitting the CONTENT into an array of code snippets
-    IFS=$'\n' read -d '' -r -a snippets <<< "$CONTENT"
+    # Use a regex to extract the filename which is expected to follow the pattern "# File name: filename.ext"
+    FILENAME=$(echo "$CONTENT" | grep -oP '(?<=# File name: ).*')
 
-    # Loop through the snippets and save them to files
-    for snippet in "${snippets[@]}"; do
-        # Use a regex to extract the filename which is expected to follow the pattern "X. filename.ext"
-        if [[ $snippet =~ ^([0-9]+)\.\ ([^\ ]+\.[^\ ]+) ]]; then
-            FILENAME=${BASH_REMATCH[2]}
-            # Remove the first line (which contains the filename) from the snippet
-            CODE=$(echo "$snippet" | sed '1d')
-            # Save the code to a file
-            echo "$CODE" > "$FILENAME"
-        fi
-    done
+    # Extract the code, removing the first line that contains the filename
+    CODE=$(echo "$CONTENT" | sed '1d')
+
+   echo "Code from ChatGPT: $CODE"
+
+
+    # Create a new branch
+    git checkout -b autocoder-branch
+
+    # Create the code file
+    echo "$CODE" > "$FILENAME"
+
+    # Add the new file to the staging area
+    git add "$FILENAME"
+
+    # Commit the new file
+    git -c user.name='autocoder-bot' -c user.email='autocoder-bot@example.com' \
+    commit -m "Add code snippets to issue #$ISSUE_NUMBER"
+
+    # Push the new branch to the remote repository
+    git push origin autocoder-branch
 fi
