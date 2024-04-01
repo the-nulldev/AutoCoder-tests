@@ -17,47 +17,61 @@ if [ $? -ne 0 ]; then
 fi
 
 # Check if the response contains an issue body
-if echo "$RESPONSE" | grep -q '"body":'; then
-    ISSUE_BODY=$(echo "$RESPONSE" | jq -r .body)
-else
-    echo "Issue body not found in response."
-    echo "Response: $RESPONSE"
-    exit 1
-fi
-
-# Check if the issue body is non-empty
+ISSUE_BODY=$(echo "$RESPONSE" | jq -r .body)
 if [[ -z "$ISSUE_BODY" ]]; then
-    echo "Issue body is empty."
+    echo "Issue body is empty or not found in the response."
     exit 1
 fi
 
-FILENAME=$(echo "$ISSUE_BODY" | grep -oP '\d+\.\s+\K\S+' | head -n 1)
+# Define clear, concise instructions for GPT
+INSTRUCTIONS="Based on the description below, please provide the code for each file. " \
+"List the filename followed by the corresponding code snippet enclosed in triple backticks."
 
-echo "Filename: $FILENAME"
+# Combine the instructions with the issue body to form the full prompt
+FULL_PROMPT="$INSTRUCTIONS\n\n$ISSUE_BODY"
 
-# Check if a filename was actually found
-if [[ -z "$FILENAME" ]]; then
-    echo "No filename found in the issue body."
-    exit 1
-fi
+# Prepare the messages array for the ChatGPT API, including the instructions
+MESSAGES_JSON=$(jq -n --arg body "$FULL_PROMPT" '[{"role": "user", "content": $body}]')
 
-# Check if the filename contains a valid extension and is not just a plain text
-if ! [[ "$FILENAME" =~ \. ]]; then
-    echo "Invalid filename ($FILENAME) found in the issue body."
-    exit 1
-fi
-
-# Prepare the messages array for the ChatGPT API
-MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $body}]')
-
+# Send the prompt to the ChatGPT model (OpenAI API)
 RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
     -H "Authorization: Bearer $OPENAI_API_KEY" \
     -H "Content-Type: application/json" \
-    -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 400}")
+    -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 1024}")
+
+# Check if the API call was successful
+if [ $? -ne 0 ]; then
+    echo "Failed to get a response from OpenAI API."
+    exit 1
+fi
 
 # Extract the content from the assistant's message
 CONTENT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
 
-# Save the generated content to the file
-echo "$CONTENT" > "$FILENAME"
-echo "The code has been written to $FILENAME"
+# Regex pattern to match file names and code blocks
+FILE_PATTERN='\d+\.\s+([a-zA-Z0-9._-]+)\s+\`\`\`[a-zA-Z]+\s+(.*?)\`\`\`'
+
+# Process each matched file and code block
+while [[ $CONTENT =~ $FILE_PATTERN ]]; do
+    FILENAME="${BASH_REMATCH[1]}"
+    CODE_SNIPPET="${BASH_REMATCH[2]}"
+
+    # Check if the filename contains a valid extension
+    if [[ "$FILENAME" =~ \. ]]; then
+        # Save the generated content to the file
+        echo "$CODE_SNIPPET" > "$FILENAME"
+        echo "The code has been written to $FILENAME"
+    else
+        echo "Invalid filename ($FILENAME) found in the response."
+        exit 1
+    fi
+
+    # Remove the processed file and code snippet from the content
+    CONTENT=$(echo "$CONTENT" | sed "0,/$FILE_PATTERN/s///")
+done
+
+# If no files were processed, exit with an error
+if ! [[ $CONTENT =~ $FILE_PATTERN ]]; then
+    echo "No valid filenames and code blocks found in the response."
+    exit 1
+fi
