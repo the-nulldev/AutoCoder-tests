@@ -10,7 +10,11 @@ OPENAI_API_KEY="$4"
 ISSUE_BODY=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
 "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER" | jq -r .body)
 
-echo "Issue body: $ISSUE_BODY"
+# Check if the issue body is null or empty
+if [[ -z "$ISSUE_BODY" ]]; then
+    echo "The issue body is null or empty."
+    exit 1
+fi
 
 # Prepare the messages array for the ChatGPT API
 MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $body}]')
@@ -18,7 +22,6 @@ MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $bo
 # Extract the filename from the first line of the issue body
 FILENAME=$(echo "$ISSUE_BODY" | head -n 1 | grep -oP '^Filename: \K.*')
 
-echo "Issue body: $ISSUE_BODY"
 # Check if a filename was actually found
 if [[ -z "$FILENAME" ]]; then
     echo "No filename found in the issue body."
