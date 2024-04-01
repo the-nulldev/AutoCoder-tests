@@ -6,15 +6,28 @@ REPOSITORY="$2"
 ISSUE_NUMBER="$3"
 OPENAI_API_KEY="$4"
 
-# Get the issue body
-ISSUE_BODY=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-"https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER" | jq -r .body)
+# Fetch issue details from GitHub API
+RESPONSE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+"https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER")
 
-echo "Issue body: $ISSUE_BODY"
+# Check if the curl command was successful
+if [ $? -ne 0 ]; then
+    echo "Failed to fetch issue details."
+    exit 1
+fi
 
-# Check if the issue body is null or empty
+# Check if the response contains an issue body
+if echo "$RESPONSE" | grep -q '"body":'; then
+    ISSUE_BODY=$(echo "$RESPONSE" | jq -r .body)
+else
+    echo "Issue body not found in response."
+    echo "Response: $RESPONSE"
+    exit 1
+fi
+
+# Check if the issue body is non-empty
 if [[ -z "$ISSUE_BODY" ]]; then
-    echo "The issue body is null or empty."
+    echo "Issue body is empty."
     exit 1
 fi
 
