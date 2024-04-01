@@ -29,6 +29,8 @@ INSTRUCTIONS="Based on the description below, please provide the code for each f
 # Combine the instructions with the issue body to form the full prompt
 FULL_PROMPT="$INSTRUCTIONS\n\n$ISSUE_BODY"
 
+echo $FULL_PROMPT
+
 # Prepare the messages array for the ChatGPT API, including the instructions
 MESSAGES_JSON=$(jq -n --arg body "$FULL_PROMPT" '[{"role": "user", "content": $body}]')
 
