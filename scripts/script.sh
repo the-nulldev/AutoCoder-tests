@@ -10,6 +10,8 @@ OPENAI_API_KEY="$4"
 ISSUE_BODY=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
 "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER" | jq -r .body)
 
+echo "Issue body: $ISSUE_BODY"
+
 # Prepare the messages array for the ChatGPT API
 MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $body}]')
 
