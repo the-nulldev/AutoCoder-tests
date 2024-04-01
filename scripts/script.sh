@@ -38,6 +38,8 @@ RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
     -H "Content-Type: application/json" \
     -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 1024}")
 
+  echo $RESPONSE
+
 # Check if the API call was successful
 if [ $? -ne 0 ]; then
     echo "Failed to get a response from OpenAI API."
