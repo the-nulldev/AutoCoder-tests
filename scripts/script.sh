@@ -18,6 +18,7 @@ MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $bo
 # Extract the filename from the first line of the issue body
 FILENAME=$(echo "$ISSUE_BODY" | head -n 1 | grep -oP '^Filename: \K.*')
 
+echo "Issue body: $ISSUE_BODY"
 # Check if a filename was actually found
 if [[ -z "$FILENAME" ]]; then
     echo "No filename found in the issue body."
