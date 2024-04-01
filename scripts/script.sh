@@ -19,8 +19,13 @@ fi
 # Prepare the messages array for the ChatGPT API
 MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $body}]')
 
-# Extract the filename from the first line of the issue body
-FILENAME=$(echo "$ISSUE_BODY" | head -n 1 | grep -oP '^Filename: \K.*')
+FILENAME=$(echo "$ISSUE_BODY" | grep -oP '\d+\.\s+\K\S+' | head -n 1)
+
+# Check if a filename was actually found
+if [[ -z "$FILENAME" ]]; then
+    echo "No filename found in the issue body."
+    exit 1
+fi
 
 # Check if a filename was actually found
 if [[ -z "$FILENAME" ]]; then
