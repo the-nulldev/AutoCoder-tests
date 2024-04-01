@@ -13,6 +13,21 @@ ISSUE_BODY=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
 # Prepare the messages array for the ChatGPT API
 MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $body}]')
 
+# Extract the filename from the first line of the issue body
+FILENAME=$(echo "$ISSUE_BODY" | head -n 1 | grep -oP '^Filename: \K.*')
+
+# Check if a filename was actually found
+if [[ -z "$FILENAME" ]]; then
+    echo "No filename found in the issue body."
+    exit 1
+fi
+
+# Check if the filename contains a valid extension and is not just a plain text
+if ! [[ "$FILENAME" =~ \. ]]; then
+    echo "Invalid filename ($FILENAME) found in the issue body."
+    exit 1
+fi
+
 # Send the issue content to the ChatGPT model (OpenAI API)
 RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
     -H "Authorization: Bearer $OPENAI_API_KEY" \
@@ -21,21 +36,6 @@ RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
 
 # Extract the content from the assistant's message
 CONTENT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
-
-# Try to extract the filename using the specified format (Filename: filename.ext)
-FILENAME=$(echo "$CONTENT" | grep -oP '^(Filename: \K.*(?=$))')
-
-# Check if a filename was actually found
-if [[ -z "$FILENAME" ]]; then
-    echo "No filename found in the ChatGPT response."
-    exit 1
-fi
-
-# Check if the filename contains a valid extension and is not just a plain text
-if ! [[ "$FILENAME" =~ \. ]]; then
-    echo "Invalid filename ($FILENAME) provided by ChatGPT."
-    exit 1
-fi
 
 # Save the generated content to the file
 echo "$CONTENT" > "$FILENAME"
