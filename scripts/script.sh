@@ -50,7 +50,6 @@ fi
 # Prepare the messages array for the ChatGPT API
 MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $body}]')
 
-ssue content to the ChatGPT model (OpenAI API)
 RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
     -H "Authorization: Bearer $OPENAI_API_KEY" \
     -H "Content-Type: application/json" \
