@@ -1,5 +1,5 @@
 name: Issue Interaction with ChatGPT
-
+#
 on:
   issues:
     types:
@@ -15,9 +15,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install jq
-        run: sudo apt-get install -y jq
-
       - name: Make script executable
         run: chmod +x ./scripts/script.sh
 
@@ -27,15 +24,24 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: ./scripts/script.sh $GITHUB_TOKEN $REPOSITORY $ISSUE_NUMBER $OPENAI_API_KEY | tee output.txt
+        run: ./scripts/script.sh
 
-      - name: Upload output to issue
-        uses: actions/upload-artifact@v4
+      - name: Commit files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Add code snippets from issue #${{ github.event.issue.number }}" -a || echo "No changes to commit"
+
+      - name: Create pull request
+        if: success()
+        uses: peter-evans/create-pull-request@v3
         with:
-          name: output
-          path: output.txt
-
-      - name: Echo output
-        run: cat output.txt
-
-
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'Add code snippets from issue'
+          title: 'Add code snippets from issue #${{ github.event.issue.number }}'
+          body: 'This PR adds code snippets generated from issue #${{ github.event.issue.number }}.'
+          branch: "autocoder/autocoder-branch"
+          base: 'main'
+          labels: 'autocoder'
+          draft: false

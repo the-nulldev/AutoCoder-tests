@@ -17,15 +17,21 @@ if echo "$LABELS" | jq -e '.[] | select(.name == "autocoder-bot")' > /dev/null; 
     "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER" | jq -r .body)
 
     # Prepare the messages array for the ChatGPT API
-    # You may include other messages to provide context or instructions
     MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $body}]')
 
     # Send the issue content to the ChatGPT model (OpenAI API)
     RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
         -H "Authorization: Bearer $OPENAI_API_KEY" \
         -H "Content-Type: application/json" \
-        -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 4096}")
+        -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 400}")
 
-    # Print the response from ChatGPT
-    echo "Response from ChatGPT: $RESPONSE"
+    # Extract the content from the assistant's message
+    CONTENT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
+
+    FILENAME=$(echo "$ISSUE_BODY" | grep -oP '(?<=```python\n).*(?=\n```)')
+
+    # copy the code to the file
+    echo "$CONTENT" > "$FILENAME"
+
+    echo "The code has been written to $FILENAME"
 fi
