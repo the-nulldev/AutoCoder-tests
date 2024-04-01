@@ -24,7 +24,7 @@ if [[ -z "$ISSUE_BODY" ]]; then
 fi
 
 # Define clear, concise instructions for GPT
-INSTRUCTIONS="Based on the description below, please provide the code for each file. List the filename followed by the corresponding code snippet enclosed in triple backticks."
+INSTRUCTIONS="Based on the description below, please provide the code for each file. List the filename with a digit such as 1. Dockerfile, 2. main.py, etc, followed by the corresponding code snippet enclosed in triple backticks"
 
 # Combine the instructions with the issue body to form the full prompt
 FULL_PROMPT="$INSTRUCTIONS\n\n$ISSUE_BODY"
