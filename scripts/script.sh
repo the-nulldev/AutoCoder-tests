@@ -10,22 +10,17 @@ OPENAI_API_KEY="$4"
 ISSUE_BODY=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
 "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER" | jq -r .body)
 
+echo "Issue body: $ISSUE_BODY"
+
 # Check if the issue body is null or empty
 if [[ -z "$ISSUE_BODY" ]]; then
     echo "The issue body is null or empty."
     exit 1
 fi
 
-# Prepare the messages array for the ChatGPT API
-MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $body}]')
-
 FILENAME=$(echo "$ISSUE_BODY" | grep -oP '\d+\.\s+\K\S+' | head -n 1)
 
-# Check if a filename was actually found
-if [[ -z "$FILENAME" ]]; then
-    echo "No filename found in the issue body."
-    exit 1
-fi
+echo "Filename: $FILENAME"
 
 # Check if a filename was actually found
 if [[ -z "$FILENAME" ]]; then
@@ -39,7 +34,10 @@ if ! [[ "$FILENAME" =~ \. ]]; then
     exit 1
 fi
 
-# Send the issue content to the ChatGPT model (OpenAI API)
+# Prepare the messages array for the ChatGPT API
+MESSAGES_JSON=$(jq -n --arg body "$ISSUE_BODY" '[{"role": "user", "content": $body}]')
+
+ssue content to the ChatGPT model (OpenAI API)
 RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
     -H "Authorization: Bearer $OPENAI_API_KEY" \
     -H "Content-Type: application/json" \
