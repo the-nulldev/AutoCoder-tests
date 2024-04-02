@@ -47,6 +47,6 @@ jobs:
               This pull request adds code snippets from issue #${{ github.event.issue.number }}.
           branch: "autocoder-branch-${{ github.event.issue.number }}"
           base: "main"
-          labels: "code-snippets"
+          labels: "autocoder-bot"
           reviewers: "autocoder-bot"
           assignees: "autocoder-bot"
