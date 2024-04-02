@@ -33,7 +33,11 @@ RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
     -H "Authorization: Bearer $OPENAI_API_KEY" \
     -H "Content-Type: application/json" \
     -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 300}")
-check_status 'Failed to get a response from OpenAI API.'
+
+if [[ -z "$RESPONSE" ]]; then
+    echo "No response received from the OpenAI API."
+    exit 1
+fi
 
 # Extract the content from the assistant's message and output as a JSON dictionary
 FILES_JSON=$(echo "$RESPONSE" | jq -r '.choices[0].message.content | fromjson')
