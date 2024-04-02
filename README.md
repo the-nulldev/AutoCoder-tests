@@ -1,2 +1,17 @@
-# AutoCoder
-This is the repo for the AutoCoder project. The goal of this project is to create a tool that can automatically generate code for a given task. The tool will take in a task description and generate code that can be used to complete the task. 
+# Python Web Service
+
+This is a Python web service containerized for production.
+
+## Setup
+
+To build the container, run:
+
+```
+docker build -t my-python-app . 
+```
+
+To run the container, execute:
+
+```
+docker run -d -p 5000:5000 my-python-app
+```
