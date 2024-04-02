@@ -53,6 +53,12 @@ MESSAGES_JSON=$(jq -n --arg body "$FULL_PROMPT" '[{"role": "user", "content": $b
 
 # Send the prompt to the ChatGPT model and extract the response
 RESPONSE=$(send_prompt_to_chatgpt)
+
+if [[ -z "$RESPONSE" ]]; then
+    echo "No response received from the OpenAI API."
+    exit 1
+fi
+
 FILES_JSON=$(echo "$RESPONSE" | jq -r '.choices[0].message.content | fromjson')
 
 if [[ -z "$FILES_JSON" ]]; then
