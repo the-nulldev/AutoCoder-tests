@@ -9,10 +9,11 @@ OPENAI_API_KEY="$4"
 # Fetch issue details from GitHub API
 RESPONSE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
 "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER")
-check_status 'Failed to fetch issue details.'
 
 # Check if the response contains an issue body
 ISSUE_BODY=$(echo "$RESPONSE" | jq -r .body)
+echo "Issue body: $ISSUE_BODY"
+
 if [[ -z "$ISSUE_BODY" ]]; then
     echo 'Issue body is empty or not found in the response.'
     exit 1
