@@ -12,14 +12,14 @@ RESPONSE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
 
 # Check if the curl command was successful
 if [ $? -ne 0 ]; then
-    echo "Failed to fetch issue details."
+    echo 'Failed to fetch issue details.'
     exit 1
 fi
 
 # Check if the response contains an issue body
 ISSUE_BODY=$(echo "$RESPONSE" | jq -r .body)
 if [[ -z "$ISSUE_BODY" ]]; then
-    echo "Issue body is empty or not found in the response."
+    echo 'Issue body is empty or not found in the response.'
     exit 1
 fi
 
@@ -46,7 +46,7 @@ echo "$RESPONSE"
 
 # Check if the API call was successful
 if [ $? -ne 0 ]; then
-    echo "Failed to get a response from OpenAI API."
+    echo 'Failed to get a response from OpenAI API.'
     exit 1
 fi
 
@@ -56,12 +56,15 @@ CONTENT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
 echo "$CONTENT"
 
 # Regex pattern to match file names and code blocks
-FILE_PATTERN="(?:([0-9]+)\. )?([^\n]+)\n```([^\`]+)```"
+FILE_PATTERN=$'([0-9]+)\\. ([^\\n]+)\\n```\\n([^`]+)```'
 
 # Process each matched file and code block
 while [[ $CONTENT =~ $FILE_PATTERN ]]; do
     FILENAME="${BASH_REMATCH[2]}"
     CODE_SNIPPET="${BASH_REMATCH[3]}"
+
+    # Normalize the end of lines from Windows to Unix if needed
+    CODE_SNIPPET=$(echo "$CODE_SNIPPET" | sed 's/\r$//')
 
     # Save the generated content to the file
     echo -e "$CODE_SNIPPET" > "$FILENAME"
