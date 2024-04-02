@@ -1,5 +1,5 @@
 name: Issue Interaction with ChatGPT
-#
+
 on:
   issues:
     types:
@@ -39,3 +39,9 @@ jobs:
       - name: Create pull request
         if: success()
         uses: peter-evans/create-pull-request@v6
+        branches: autocoder-branch
+        title: Add code snippets from issue #${{ github.event.issue.number }}
+        body: |
+          This pull request adds code snippets from issue #${{ github.event.issue.number }}.
+        labels: autocoder-bot
+        assignees: ${{ github.actor }}
