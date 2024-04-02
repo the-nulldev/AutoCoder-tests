@@ -39,9 +39,13 @@ jobs:
       - name: Create pull request
         if: success()
         uses: peter-evans/create-pull-request@v6
-        branches: autocoder-branch
-        title: Add code snippets from issue #${{ github.event.issue.number }}
-        body: |
-          This pull request adds code snippets from issue #${{ github.event.issue.number }}.
-        labels: autocoder-bot
-        assignees: ${{ github.actor }}
+        with:
+          commit-message: "Add code snippets from issue #${{ github.event.issue.number }}"
+          title: "Add code snippets from issue #${{ github.event.issue.number }}"
+          body: |
+              This pull request adds code snippets from issue #${{ github.event.issue.number }}.
+          branch: "autocoder-branch-${{ github.event.issue.number }}"
+          base: "main"
+          labels: "code-snippets"
+          reviewers: "autocoder-bot"
+          assignees: "autocoder-bot"
