@@ -51,7 +51,7 @@ FULL_PROMPT="$INSTRUCTIONS\n\n$ISSUE_BODY"
 # Prepare the messages array for the ChatGPT API, including the instructions
 MESSAGES_JSON=$(jq -n --arg body "$FULL_PROMPT" '[{"role": "user", "content": $body}]')
 
-# Send the prompt to the ChatGPT model and extract the response
+# Send the prompt to the ChatGPT model
 RESPONSE=$(send_prompt_to_chatgpt)
 
 if [[ -z "$RESPONSE" ]]; then
@@ -59,6 +59,7 @@ if [[ -z "$RESPONSE" ]]; then
     exit 1
 fi
 
+# Extract the JSON dictionary from the response
 FILES_JSON=$(echo "$RESPONSE" | jq -r '.choices[0].message.content | fromjson')
 
 if [[ -z "$FILES_JSON" ]]; then
