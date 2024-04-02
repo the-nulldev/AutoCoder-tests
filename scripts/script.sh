@@ -20,7 +20,7 @@ if [[ -z "$ISSUE_BODY" ]]; then
 fi
 
 # Define clear, concise instructions for GPT
-INSTRUCTIONS="Based on the description below, please list the files and their specific directories and requirements for a production ready application. Provide the information as a compact, JSON-formatted dictionary where the keys are file paths (not directories, just files!) and the values are the descriptions strings. Stick to that description, don't add anything else. Make the minimum amount of assumptions about the rest of the repo. \n"
+INSTRUCTIONS="Based on the description below, please list the files and code for a production ready application. Provide the information as a compact, JSON-formatted dictionary where the keys are file paths (not directories, just files!) and the values are the code. Stick to that description, don't add anything else. Make the minimum amount of assumptions about the rest of the repo. \n"
 
 # Combine the instructions with the issue body to form the full prompt
 FULL_PROMPT="$INSTRUCTIONS\n\n$ISSUE_BODY"
