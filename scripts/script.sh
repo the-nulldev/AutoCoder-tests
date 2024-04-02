@@ -24,23 +24,25 @@ if [[ -z "$ISSUE_BODY" ]]; then
 fi
 
 # Define clear, concise instructions for GPT
-INSTRUCTIONS="Based on the description below, please provide the code for each file. List the filename with a digit such as 1. Dockerfile, 2. main.py, etc, followed by the corresponding code snippet enclosed in triple backticks"
+INSTRUCTIONS="Based on the description below, please list the files and their specific directories and requirements for a production ready application. List the path with a digit such as 1. Dockerfile, 2. main.py, etc, followed by the corresponding code snippet enclosed in triple backticks. Stick to that description, don't add anything else. Make the minimum amount of assumptions about the rest of the repo. \n"
 
 # Combine the instructions with the issue body to form the full prompt
 FULL_PROMPT="$INSTRUCTIONS\n\n$ISSUE_BODY"
 
-echo $FULL_PROMPT
+echo "$FULL_PROMPT"
 
 # Prepare the messages array for the ChatGPT API, including the instructions
 MESSAGES_JSON=$(jq -n --arg body "$FULL_PROMPT" '[{"role": "user", "content": $body}]')
+
+echo "$MESSAGES_JSON"
 
 # Send the prompt to the ChatGPT model (OpenAI API)
 RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
     -H "Authorization: Bearer $OPENAI_API_KEY" \
     -H "Content-Type: application/json" \
-    -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 1024}")
+    -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 300}")
 
-  echo $RESPONSE
+echo "$RESPONSE"
 
 # Check if the API call was successful
 if [ $? -ne 0 ]; then
@@ -51,30 +53,26 @@ fi
 # Extract the content from the assistant's message
 CONTENT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
 
+echo "$CONTENT"
+
 # Regex pattern to match file names and code blocks
-FILE_PATTERN='\d+\.\s+([a-zA-Z0-9._-]+)\s+\`\`\`[a-zA-Z]+\s+(.*?)\`\`\`'
+FILE_PATTERN="(?:([0-9]+)\. )?([^\n]+)\n```([^\`]+)```"
 
 # Process each matched file and code block
 while [[ $CONTENT =~ $FILE_PATTERN ]]; do
-    FILENAME="${BASH_REMATCH[1]}"
-    CODE_SNIPPET="${BASH_REMATCH[2]}"
+    FILENAME="${BASH_REMATCH[2]}"
+    CODE_SNIPPET="${BASH_REMATCH[3]}"
 
-    # Check if the filename contains a valid extension
-    if [[ "$FILENAME" =~ \. ]]; then
-        # Save the generated content to the file
-        echo "$CODE_SNIPPET" > "$FILENAME"
-        echo "The code has been written to $FILENAME"
-    else
-        echo "Invalid filename ($FILENAME) found in the response."
-        exit 1
-    fi
+    # Save the generated content to the file
+    echo -e "$CODE_SNIPPET" > "$FILENAME"
+    echo "The code has been written to $FILENAME"
 
-    # Remove the processed file and code snippet from the content
-    CONTENT=$(echo "$CONTENT" | sed "0,/$FILE_PATTERN/s///")
+    # Trim the first match from the content to avoid reprocessing
+    CONTENT="${CONTENT#*$BASH_REMATCH}"
 done
 
-# If no files were processed, exit with an error
-if ! [[ $CONTENT =~ $FILE_PATTERN ]]; then
+# Check if at least one file was processed
+if [ -z "$FILENAME" ]; then
     echo "No valid filenames and code blocks found in the response."
     exit 1
 fi
