@@ -1,2 +1,10 @@
 # AutoCoder
-This is the repo for the AutoCoder project. The goal of this project is to create a tool that can automatically generate code for a given task. The tool will take in a task description and generate code that can be used to complete the task. 
+
+AutoCoder is an automated code generation tool designed to speed up the software development process by generating boilerplate code, templates, and other repetitive structures based on issues and predefined patterns.
+
+## Features
+
+- **Code Templates**: Jumpstart your projects with a variety of language-specific templates;
+- **Customizable Generation**: Tailor the generated code to your specific needs by specifying your prompt as a GitHub Issue;
+- **Integration Support**: Works as part of your CI/CD pipeline using workflows with GitHub Actions;
+- **Collaboration Friendly**: Share your action with team members to ensure consistency across your codebase.
