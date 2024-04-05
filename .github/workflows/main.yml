@@ -36,7 +36,7 @@ jobs:
           path:  ./autocoder-bot
 
       - name: List files in the artifact
-        run: ls -R ./autocoder-bot
+        run: ls autocoder-artifact
 
 #
 #          name: Issue Interaction with ChatGPT
