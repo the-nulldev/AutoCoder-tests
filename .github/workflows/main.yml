@@ -33,10 +33,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: autocoder-artifact
-          path:  ./autocoder-bot
+          path:  ./autocoder-artifact
 
       - name: List files in the artifact
-        run: ls -R ./autocoder-bot
+        run: ls -R ./autocoder-artifact
 
 #
 #          name: Issue Interaction with ChatGPT
