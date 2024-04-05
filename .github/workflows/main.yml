@@ -27,20 +27,20 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: generated-code
-          path: ./**/*
+          path: ./autocoder-bot/*
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           name: generated-code
-          path: generated-code
+          path:  ./autocoder-bot
 
       - name: List files in the artifact
-        run: ls -R generated-code
+        run: ls -R ./autocoder-bot
 
       - name: Display content of generated files
         run: |
-          for file in $(find generated-code -type f); do
+          for file in $(find autocoder-bot -type f); do
             echo "Content of $file:"
             cat "$file"
             echo ""

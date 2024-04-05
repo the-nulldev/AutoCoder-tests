@@ -25,7 +25,8 @@ send_prompt_to_chatgpt() {
 
 # Function to save code snippet to file
 save_to_file() {
-    local filename="$1"
+    #  the script will save the code snippets to files in a directory named "autocoder-bot" with the filename specified in the JSON object.
+    local filename="autocoder-bot/$1"
     local code_snippet="$2"
 
     mkdir -p "$(dirname "$filename")"
