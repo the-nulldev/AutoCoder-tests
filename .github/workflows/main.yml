@@ -38,14 +38,6 @@ jobs:
       - name: List files in the artifact
         run: ls -R ./autocoder-bot
 
-      - name: Display content of generated files
-        run: |
-          for file in $(find autocoder-bot -type f); do
-            echo "Content of $file:"
-            cat "$file"
-            echo ""
-          done
-
 #
 #          name: Issue Interaction with ChatGPT
 #
