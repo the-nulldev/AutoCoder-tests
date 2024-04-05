@@ -10,6 +10,7 @@ on:
 jobs:
   generate-code:
     runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'autocoder-bot')
 
     steps:
       - name: Checkout repository
