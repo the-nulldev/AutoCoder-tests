@@ -42,8 +42,8 @@ if [[ -z "$ISSUE_BODY" ]]; then
     exit 1
 fi
 
-# Define clear, concise instructions for GPT
-INSTRUCTIONS="Based on the description below, please list the files and code for a production ready application. Provide the response as a nice, JSON-formatted dictionary where the keys are file paths and the values are the code snippets. Stick to that description and don't add anything else. \n"
+# Define clear, additional instructions for GPT regarding the response format
+INSTRUCTIONS="Based on the description below, please generate a JSON object where the keys represent file paths and the values are the corresponding code snippets for a production-ready application. The response should be a valid strictly JSON object without any additional formatting, markdown, or characters outside the JSON structure."
 
 # Combine the instructions with the issue body to form the full prompt
 FULL_PROMPT="$INSTRUCTIONS\n\n$ISSUE_BODY"
@@ -60,10 +60,11 @@ if [[ -z "$RESPONSE" ]]; then
 fi
 
 # Extract the JSON dictionary from the response
-FILES_JSON=$(echo "$RESPONSE" | jq -r '.choices[0].message.content | fromjson')
+# Make sure that the extracted content is valid JSON
+FILES_JSON=$(echo "$RESPONSE" | jq -e '.choices[0].message.content | fromjson' 2> /dev/null)
 
 if [[ -z "$FILES_JSON" ]]; then
-    echo "No valid JSON dictionary found in the response."
+    echo "No valid JSON dictionary found in the response or the response was not valid JSON. Please rerun the job."
     exit 1
 fi
 
