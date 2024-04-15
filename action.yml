@@ -1,21 +1,27 @@
 name: 'AutoCoder'
-description: 'Generates code from GitHub issues using ChatGPT, commits the code into a new branch, and creates a pull request'
+description: 'Generates code using ChatGPT and creates a pull request with the generated code.'
+author: 'Your Name'
 inputs:
-  github_token:
-    description: 'GitHub token for API authentication'
+  GITHUB_TOKEN:
+    description: 'GitHub token for authentication'
     required: true
-  openai_api_key:
-    description: 'OpenAI API key for interacting with ChatGPT'
+  REPOSITORY:
+    description: 'The repository to run the action on'
     required: true
-  issue_number:
-    description: 'The number of the GitHub issue to process'
+  ISSUE_NUMBER:
+    description: 'The issue number to generate code for'
     required: true
-  repository:
-    description: 'The full name of the repository to work on. Format: owner/repo'
+  OPENAI_API_KEY:
+    description: 'OpenAI API key for ChatGPT'
     required: true
+  SCRIPT_PATH:
+    description: 'Path to the script that interacts with ChatGPT'
+    required: true
+    default: './scripts/script.sh'
   label:
-    description: 'The label to trigger this action'
+    description: 'The label to trigger the action'
     required: true
+    default: 'autocoder-bot'
   commit_message:
     description: 'The commit message to use for committing the generated code'
     required: false
@@ -52,36 +58,42 @@ runs:
   steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-
-    - name: Run interaction script
+    - name: Make script executable
+      run: chmod +x ${{ inputs.SCRIPT_PATH }}
       shell: bash
+    - name: Run interaction script
       run: |
-        chmod +x ./scripts/script.sh
-        ./scripts/script.sh ${{ inputs.github_token }} ${{ inputs.repository }} ${{ inputs.issue_number }} ${{ inputs.openai_api_key }}
+        $SCRIPT_PATH $GITHUB_TOKEN $REPOSITORY $ISSUE_NUMBER $OPENAI_API_KEY
+      shell: bash
+      env:
+        SCRIPT_PATH: ${{ inputs.SCRIPT_PATH }}
+        GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+        REPOSITORY: ${{ inputs.REPOSITORY }}
+        ISSUE_NUMBER: ${{ inputs.ISSUE_NUMBER }}
+        OPENAI_API_KEY: ${{ inputs.OPENAI_API_KEY }}
 
     - name: Commit files
-      shell: bash
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git checkout -b ${{ inputs.branch_prefix }}${{ inputs.issue_number }}
         git add .
-        git commit -m "${{ inputs.commit_message }}" || echo "No changes to commit"
-
-    - name: Push changes
+        git commit -m "Add code snippets from issue #${{ inputs.ISSUE_NUMBER }}" -a || echo "No changes to commit"
       shell: bash
-      run: git push -u origin ${{ inputs.branch_prefix }}${{ inputs.issue_number }}
-
     - name: Create pull request
+      id: create-pr
       uses: peter-evans/create-pull-request@v6
       with:
-        token: ${{ inputs.github_token }}
-        commit-message: ${{ inputs.commit_message }}
-        title: ${{ inputs.pr_title }}
-        body: ${{ inputs.pr_body }}
-        branch: ${{ inputs.branch_prefix }}
-        base: ${{ inputs.base_branch }}
-        labels: ${{ inputs.pr_label }}
-        reviewers: ${{ inputs.pr_reviewers }}
-        assignees: ${{ inputs.pr_assignees }}
-        draft: false
+        commit-message: "Add code snippets from issue #${{ inputs.ISSUE_NUMBER }}"
+        title: "Add code snippets from issue #${{ inputs.ISSUE_NUMBER }}"
+        body: |
+          This pull request adds code snippets from issue #${{ inputs.ISSUE_NUMBER }}.
+        branch: "autocoder-branch-${{ inputs.ISSUE_NUMBER }}"
+        base: "main"
+        labels: "autocoder-bot"
+        reviewers: "autocoder-bot"
+        assignees: "autocoder-bot"
+      shell: bash
+    - name: Set output
+      run: echo "::set-output name=PULL_REQUEST_URL::$(jq -r .pull_request.html_url ${{ steps.create-pr.outputs.pr }}"
+      shell: bash
+
