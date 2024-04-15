@@ -92,8 +92,8 @@ runs:
         labels: "autocoder-bot"
         reviewers: "autocoder-bot"
         assignees: "autocoder-bot"
-      shell: bash
-    - name: Set output
-      run: echo "::set-output name=PULL_REQUEST_URL::$(jq -r .pull_request.html_url ${{ steps.create-pr.outputs.pr }}"
-      shell: bash
+#
+#    - name: Set output
+#      run: echo "::set-output name=PULL_REQUEST_URL::$(jq -r .pull_request.html_url ${{ steps.create-pr.outputs.pr }}"
+#      shell: bash
 
