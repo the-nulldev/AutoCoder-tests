@@ -62,7 +62,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Interact with ChatGPT
-        uses: https://github.com/the-nulldev/AutoCoder/releases/tag/v1
+        uses: the-nulldev/AutoCoder@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
