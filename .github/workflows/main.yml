@@ -1,4 +1,3 @@
-
 name: 'AutoCoder'
 description: 'Generates code using ChatGPT and creates a pull request with the generated code.'
 author: 'Your Name'
