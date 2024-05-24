@@ -1,4 +1,5 @@
-Project Description
-=================
+{
+  "content": "# Project Name
 
-This is a brief description of your project.
+Basic information about the project setup and how to build and run the container."
+}

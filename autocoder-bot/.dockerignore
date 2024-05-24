@@ -1,0 +1,6 @@
+{
+  "content": "*.pyc
+__pycache__
+.dockerignore
+Dockerfile"
+}
