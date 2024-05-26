@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  interact-with-chatgpt:
+  run-tests:
     runs-on: ubuntu-latest
     if: contains(github.event.issue.labels.*.name, 'autocoder-bot')
     steps:
