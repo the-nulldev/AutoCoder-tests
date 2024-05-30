@@ -1,110 +1,51 @@
 name: Issue Interaction with ChatGPT
 
 on:
-  pull_request:
+  issues:
     types:
       - opened
       - reopened
-      - synchronize
-    branches:
-      - main
-#  issues:
-#    types:
-#      - opened
-#      - reopened
-#      - labeled
+      - labeled
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-#  run-tests:
-#    runs-on: ubuntu-latest
-#    if: contains(github.event.issue.labels.*.name, 'autocoder-bot')
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
-#
-#      - name: Make script executable
-#        run: chmod +x ./scripts/script.sh
-#
-#      - name: Run interaction script
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          REPOSITORY: ${{ github.repository }}
-#          ISSUE_NUMBER: ${{ github.event.issue.number }}
-#          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-#        run: ./scripts/script.sh $GITHUB_TOKEN $REPOSITORY $ISSUE_NUMBER $OPENAI_API_KEY
-#
-#      - name: Commit files
-#        run: |
-#          git config --local user.email "actions@github.com"
-#          git config --local user.name "autocoder-bot"
-#          git add .
-#          git commit -m "Add code snippets from issue #${{ github.event.issue.number }}" -a || echo "No changes to commit"
-#      - name: Create pull request
-#        if: success()
-#        uses: peter-evans/create-pull-request@v6
-#        with:
-#          commit-message: "Add code snippets from issue #${{ github.event.issue.number }}"
-#          title: "Add code snippets from issue #${{ github.event.issue.number }}"
-#          body: |
-#              This pull request adds code snippets from issue #${{ github.event.issue.number }}.
-#          branch: "autocoder-branch-${{ github.event.issue.number }}"
-#          base: "main"
-#          labels: "autocoder-bot"
-#          reviewers: "autocoder-bot"
-#          assignees: "autocoder-bot"
-
-  analyze-code-with-chatgpt:
+  run-tests:
     runs-on: ubuntu-latest
-#    needs: run-tests
+    if: contains(github.event.issue.labels.*.name, 'autocoder-bot')
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Extract PR Diff
-        run: |
-          BASE_REF=${{ github.event.pull_request.base.sha }}
-          HEAD_REF=${{ github.event.pull_request.head.sha }}
-          git fetch origin $BASE_REF --depth=1
-          git diff $BASE_REF $HEAD_REF > pr_diff.txt
+      - name: Make script executable
+        run: chmod +x ./scripts/script.sh
 
-      - name: Analyze Code with OpenAI
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          DIFF_CONTENT=$(cat pr_diff.txt)
-          INSTRUCTIONS="Based on the code diff below, please provide a summary of the major insights derived. Also, check for any potential issues or improvements.The response should be a concise summary without any additional formatting, markdown, or characters outside the summary text."
-          FULL_PROMPT="$INSTRUCTIONS\n\n$DIFF_CONTENT"
-          MESSAGES_JSON=$(jq -n --arg body "$FULL_PROMPT" '[{"role": "user", "content": $body}]')
-          
-          RESPONSE=$(curl -s -X POST "https://api.openai.com/v1/chat/completions" \
-            -H "Authorization: Bearer $OPENAI_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 500}")
-          
-          SUMMARY=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
-          
-          if [[ -z "$SUMMARY" ]]; then
-            echo "No summary found in the response. Please rerun the job."
-            exit 1
-          fi
-
-          echo "$SUMMARY" > summary.txt
-
-      - name: Post Comment on PR
+      - name: Run interaction script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: ./scripts/script.sh $GITHUB_TOKEN $REPOSITORY $ISSUE_NUMBER $OPENAI_API_KEY
+
+      - name: Commit files
         run: |
-          pr_number=${{ github.event.pull_request.number }}
-          response=$(cat summary.txt)
-          comment_body=$(jq -n --arg body "$response" '{body: $body}')
-          curl -s -X POST \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "$comment_body" \
-            "https://api.github.com/repos/${{ github.repository }}/issues/$pr_number/comments"
+          git config --local user.email "actions@github.com"
+          git config --local user.name "autocoder-bot"
+          git add .
+          git commit -m "Add code snippets from issue #${{ github.event.issue.number }}" -a || echo "No changes to commit"
+      - name: Create pull request
+        if: success()
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "Add code snippets from issue #${{ github.event.issue.number }}"
+          title: "Add code snippets from issue #${{ github.event.issue.number }}"
+          body: |
+              This pull request adds code snippets from issue #${{ github.event.issue.number }}.
+          branch: "autocoder-branch-${{ github.event.issue.number }}"
+          base: "main"
+          labels: "autocoder-bot"
+          reviewers: "autocoder-bot"
+          assignees: "autocoder-bot"
