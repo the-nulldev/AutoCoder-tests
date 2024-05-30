@@ -1,6 +1,7 @@
 {
-  "name": "my-node-app",
+  "name": "your-project-name",
   "version": "1.0.0",
+  "description": "Your project description",
   "main": "src/index.js",
   "dependencies": {
     "express": "^4.17.1"
