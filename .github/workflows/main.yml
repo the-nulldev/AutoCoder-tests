@@ -55,9 +55,9 @@ jobs:
     needs: run-tests
     steps:
       - name: Checkout Repository
-        uses: actions@v4
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history for all branches and tags
+          fetch-depth: 0
 
       - name: Extract PR Diff
         run: |
