@@ -78,7 +78,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           DIFF_CONTENT=$(cat pr_diff.txt)
-          INSTRUCTIONS="Based on the code diff below, please provide a summary of the major insights derived. The response should be a concise summary without any additional formatting, markdown, or characters outside the summary text."
+          INSTRUCTIONS="Based on the code diff below, please provide a summary of the major insights derived. Also, check for any potential issues or improvements.The response should be a concise summary without any additional formatting, markdown, or characters outside the summary text."
           FULL_PROMPT="$INSTRUCTIONS\n\n$DIFF_CONTENT"
           MESSAGES_JSON=$(jq -n --arg body "$FULL_PROMPT" '[{"role": "user", "content": $body}]')
           
