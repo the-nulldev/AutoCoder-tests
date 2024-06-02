@@ -21,6 +21,9 @@ jobs:
       - name: Extract PR Diff
         run: git diff ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} > pr_diff.txt
 
+      - name: Make script executable
+        run: chmod +x ./scripts/gpt.sh
+
       - name: Analyze and Comment with OpenAI
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
