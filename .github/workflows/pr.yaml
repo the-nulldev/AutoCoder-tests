@@ -1,0 +1,11 @@
+on:
+  issue_comment:
+    types: [created, deleted]
+
+jobs:
+  pr_comments:
+    if: ${{ github.event.issue.pull_request }} # only runs for pull request comments not normal issues
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "You have a new comment on PR: ${{ github.event.issue.number }}"
