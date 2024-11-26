@@ -15,12 +15,15 @@ OPENAI_API_KEY="$4"
 # Function to fetch issue details from GitHub API
 fetch_issue_details() {
     echo "Fetching issue details for repository: $REPOSITORY, issue number: $ISSUE_NUMBER"
-    RESPONSE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-         "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER")
+    curl -s -H "Authorization: token $GITHUB_TOKEN" \
+         "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER"
 }
 
 # Fetch and process issue details
 RESPONSE=$(fetch_issue_details)
+
+# Display the raw JSON response for debugging purposes
+echo "Response from GitHub API: $RESPONSE"
 
 # Ensure the response is valid JSON
 if echo "$RESPONSE" | jq empty 2>/dev/null; then
@@ -55,6 +58,7 @@ send_prompt_to_chatgpt() {
 
 # Send the prompt to the ChatGPT model
 RESPONSE=$(send_prompt_to_chatgpt)
+echo "Response from OpenAI API: $RESPONSE"
 
 if [[ -z "$RESPONSE" ]]; then
     echo "Error: No response received from the OpenAI API."
