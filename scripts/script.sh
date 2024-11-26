@@ -15,8 +15,10 @@ OPENAI_API_KEY="$4"
 # Function to fetch issue details from GitHub API
 fetch_issue_details() {
     echo "Fetching issue details for repository: $REPOSITORY, issue number: $ISSUE_NUMBER"
-    curl -s -H "Authorization: token $GITHUB_TOKEN" \
-         "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER"
+    RESPONSE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+         "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER")
+    echo "Response from GitHub API: $RESPONSE"
+    echo "$RESPONSE"
 }
 
 # Function to send prompt to the ChatGPT model (OpenAI API)
