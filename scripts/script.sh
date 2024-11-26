@@ -17,7 +17,7 @@ fetch_issue_details() {
     echo "Fetching issue details for repository: $REPOSITORY, issue number: $ISSUE_NUMBER"
     RESPONSE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
          "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER")
-    echo "Response from GitHub API: $RESPONSE"
+    echo "Response from GitHub API: \n"
     echo "$RESPONSE"
 }
 
@@ -41,7 +41,13 @@ save_to_file() {
 }
 
 # Fetch and process issue details
+
 RESPONSE=$(fetch_issue_details)
+if [[ -z "$RESPONSE" ]]; then
+    echo "Error: No response received from the OpenAI API."
+    exit 1
+fi
+
 ISSUE_BODY=$(echo "$RESPONSE" | jq -r .body)
 
 if [[ -z "$ISSUE_BODY" ]]; then
