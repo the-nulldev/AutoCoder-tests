@@ -12,11 +12,6 @@ REPOSITORY="$2"
 ISSUE_NUMBER="$3"
 OPENAI_API_KEY="$4"
 
-# Base URL for the mock OpenAI API
-OPENAI_API_BASE="https://3v42z.wiremockapi.cloud/v1"
-
-# Directory to save generated files
-OUTPUT_DIR="autocoder-bot"
 
 # Function to fetch issue details from GitHub API
 fetch_issue_details() {
@@ -26,7 +21,7 @@ fetch_issue_details() {
 
 # Function to send a prompt to the ChatGPT model (OpenAI API)
 send_prompt_to_chatgpt() {
-    curl -s -X POST "$OPENAI_API_BASE/chat/completions" \
+    curl -s -X POST "https://3v42z.wiremockapi.cloud/v1/chat/completions" \
         -H "Authorization: Bearer $OPENAI_API_KEY" \
         -H "Content-Type: application/json" \
         -d "$1"
@@ -34,7 +29,7 @@ send_prompt_to_chatgpt() {
 
 # Function to save code snippet to a file
 save_to_file() {
-    local filename="$OUTPUT_DIR/$1"
+    local filename="autocoder-bot/$1"
     local code_snippet="$2"
 
     mkdir -p "$(dirname "$filename")"
