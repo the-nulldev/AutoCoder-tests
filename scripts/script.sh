@@ -10,7 +10,7 @@ set -x
 GITHUB_TOKEN="$1"
 REPOSITORY="$2"
 ISSUE_NUMBER="$3"
-OPENAI_API_KEY="$4"
+OPENAI_API_KEY="sk-uqywzmvjwodqq4agnqepmsjiytbzwqv"
 
 # Function to fetch issue details from GitHub API
 fetch_issue_details() {
@@ -20,7 +20,7 @@ fetch_issue_details() {
 
 # Function to send prompt to the ChatGPT model (OpenAI API)
 send_prompt_to_chatgpt() {
-curl -s -X POST "https://api.openai.com/v1/chat/completions" \
+curl -s -X POST "https://mockgpt.wiremockapi.cloud/v1" \
     -H "Authorization: Bearer $OPENAI_API_KEY" \
     -H "Content-Type: application/json" \
     -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 500}"
