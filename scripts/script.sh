@@ -3,13 +3,20 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-# log each command
+# Log each command for debugging purposes
 set -x
 
 # Get inputs from the environment
 GITHUB_TOKEN="$1"
 REPOSITORY="$2"
 ISSUE_NUMBER="$3"
+OPENAI_API_KEY="sk-uqywzmvjwodqq4agnqepmsjiytbzwqv"
+
+# Base URL for the mock OpenAI API
+OPENAI_API_BASE="https://mockgpt.wiremockapi.cloud/v1"
+
+# Directory to save generated files
+OUTPUT_DIR="autocoder-bot"
 
 # Function to fetch issue details from GitHub API
 fetch_issue_details() {
@@ -17,9 +24,17 @@ fetch_issue_details() {
          "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER"
 }
 
-# Function to save code snippet to file
+# Function to send a prompt to the ChatGPT model (OpenAI API)
+send_prompt_to_chatgpt() {
+    curl -s -X POST "$OPENAI_API_BASE/chat/completions" \
+        -H "Authorization: Bearer $OPENAI_API_KEY" \
+        -H "Content-Type: application/json" \
+        -d "$1"
+}
+
+# Function to save code snippet to a file
 save_to_file() {
-    local filename="autocoder-bot/$1"
+    local filename="$OUTPUT_DIR/$1"
     local code_snippet="$2"
 
     mkdir -p "$(dirname "$filename")"
@@ -36,26 +51,32 @@ if [[ -z "$ISSUE_BODY" ]]; then
     exit 1
 fi
 
-# Define clear, additional instructions for GPT regarding the response format
+# Define instructions for GPT
 INSTRUCTIONS="Based on the description below, please generate a JSON object where the keys represent file paths and the values are the corresponding code snippets for a production-ready application. The response should be a valid strictly JSON object without any additional formatting, markdown, or characters outside the JSON structure."
 
-# Combine the instructions with the issue body to form the full prompt
+# Combine instructions and issue body to form the full prompt
 FULL_PROMPT="$INSTRUCTIONS\n\n$ISSUE_BODY"
 
-# Create a Python script to send the prompt to the ChatGPT model
-python -c "
-import os
-import openai
-import json
-openai.api_base='https://mockgpt.wiremockapi.cloud/v1'
-openai.api_key='sk-uqywzmvjwodqq4agnqepmsjiytbzwqv'
-chat_completion = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=[{'role': 'user', 'content': '$FULL_PROMPT'}])
-response = chat_completion.choices[0].message.content
-print(json.loads(response))
-" > response.json
+# Prepare the JSON payload for the ChatGPT API
+MESSAGES_JSON=$(jq -n --arg body "$FULL_PROMPT" '[{"role": "user", "content": $body}]')
+PAYLOAD=$(jq -n --argjson messages "$MESSAGES_JSON" --arg model "gpt-3.5-turbo" --arg max_tokens 500 \
+    '{"model": $model, "messages": $messages, "max_tokens": ($max_tokens | tonumber)}')
+
+# Send the prompt to the ChatGPT model
+CHATGPT_RESPONSE=$(send_prompt_to_chatgpt "$PAYLOAD")
+
+if [[ -z "$CHATGPT_RESPONSE" ]]; then
+    echo "No response received from the OpenAI API."
+    exit 1
+fi
 
 # Extract the JSON dictionary from the response
-FILES_JSON=$(jq -r '.[]' response.json)
+FILES_JSON=$(echo "$CHATGPT_RESPONSE" | jq -e '.choices[0].message.content | fromjson' 2> /dev/null)
+
+if [[ -z "$FILES_JSON" ]]; then
+    echo "No valid JSON dictionary found in the response or the response was not valid JSON. Please rerun the job."
+    exit 1
+fi
 
 # Iterate over each key-value pair in the JSON dictionary
 for key in $(echo "$FILES_JSON" | jq -r 'keys[]'); do
@@ -66,22 +87,3 @@ for key in $(echo "$FILES_JSON" | jq -r 'keys[]'); do
 done
 
 echo "All files have been processed successfully."
-
-# Requirements
-python -c "
-import os
-import openai
-import json
-openai.api_base='https://mockgpt.wiremockapi.cloud/v1'
-openai.api_key='sk-uqywzmvjwodqq4agnqepmsjiytbzwqv'
-chat_completion = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=[{'role': 'user', 'content': 'Please provide the requirements for the project.'}])
-response = chat_completion.choices[0].message.content
-print(json.loads(response))
-" > requirements.json
-
-# Extract the requirements from the response
-REQUIREMENTS=$(jq -r '.[]' requirements.json)
-
-# Print the requirements
-echo "Requirements:"
-echo "$REQUIREMENTS"
