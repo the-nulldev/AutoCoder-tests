@@ -13,7 +13,7 @@ ISSUE_NUMBER="$3"
 OPENAI_API_KEY="sk-uqywzmvjwodqq4agnqepmsjiytbzwqv"
 
 # Base URL for the mock OpenAI API
-OPENAI_API_BASE="https://mockgpt.wiremockapi.cloud/v1"
+OPENAI_API_BASE="https://061yy.wiremockapi.cloud/"
 
 # Directory to save generated files
 OUTPUT_DIR="autocoder-bot"
