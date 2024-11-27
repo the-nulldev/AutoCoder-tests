@@ -10,7 +10,6 @@ set -x
 GITHUB_TOKEN="$1"
 REPOSITORY="$2"
 ISSUE_NUMBER="$3"
-OPENAI_API_KEY="sk-uqywzmvjwodqq4agnqepmsjiytbzwqv"
 
 # Function to fetch issue details from GitHub API
 fetch_issue_details() {
@@ -18,18 +17,8 @@ fetch_issue_details() {
          "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER"
 }
 
-# Function to send prompt to the ChatGPT model (OpenAI API)
-send_prompt_to_chatgpt() {
-curl -s -X POST "https://mockgpt.wiremockapi.cloud/v1" \
-    -H "Authorization: Bearer $OPENAI_API_KEY" \
-    -H "Content-Type: application/json" \
-    -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 500}"
-}
-
-
 # Function to save code snippet to file
 save_to_file() {
-    #  the script will save the code snippets to files in a directory named "autocoder-bot" with the filename specified in the JSON object.
     local filename="autocoder-bot/$1"
     local code_snippet="$2"
 
@@ -53,25 +42,20 @@ INSTRUCTIONS="Based on the description below, please generate a JSON object wher
 # Combine the instructions with the issue body to form the full prompt
 FULL_PROMPT="$INSTRUCTIONS\n\n$ISSUE_BODY"
 
-# Prepare the messages array for the ChatGPT API, including the instructions
-MESSAGES_JSON=$(jq -n --arg body "$FULL_PROMPT" '[{"role": "user", "content": $body}]')
-
-# Send the prompt to the ChatGPT model
-RESPONSE=$(send_prompt_to_chatgpt)
-
-if [[ -z "$RESPONSE" ]]; then
-    echo "No response received from the OpenAI API."
-    exit 1
-fi
+# Create a Python script to send the prompt to the ChatGPT model
+python -c "
+import os
+import openai
+import json
+openai.api_base='https://mockgpt.wiremockapi.cloud/v1'
+openai.api_key='sk-uqywzmvjwodqq4agnqepmsjiytbzwqv'
+chat_completion = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=[{'role': 'user', 'content': '$FULL_PROMPT'}])
+response = chat_completion.choices[0].message.content
+print(json.loads(response))
+" > response.json
 
 # Extract the JSON dictionary from the response
-# Make sure that the extracted content is valid JSON
-FILES_JSON=$(echo "$RESPONSE" | jq -e '.choices[0].message.content | fromjson' 2> /dev/null)
-
-if [[ -z "$FILES_JSON" ]]; then
-    echo "No valid JSON dictionary found in the response or the response was not valid JSON. Please rerun the job."
-    exit 1
-fi
+FILES_JSON=$(jq -r '.[]' response.json)
 
 # Iterate over each key-value pair in the JSON dictionary
 for key in $(echo "$FILES_JSON" | jq -r 'keys[]'); do
@@ -82,3 +66,22 @@ for key in $(echo "$FILES_JSON" | jq -r 'keys[]'); do
 done
 
 echo "All files have been processed successfully."
+
+# Requirements
+python -c "
+import os
+import openai
+import json
+openai.api_base='https://mockgpt.wiremockapi.cloud/v1'
+openai.api_key='sk-uqywzmvjwodqq4agnqepmsjiytbzwqv'
+chat_completion = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=[{'role': 'user', 'content': 'Please provide the requirements for the project.'}])
+response = chat_completion.choices[0].message.content
+print(json.loads(response))
+" > requirements.json
+
+# Extract the requirements from the response
+REQUIREMENTS=$(jq -r '.[]' requirements.json)
+
+# Print the requirements
+echo "Requirements:"
+echo "$REQUIREMENTS"
