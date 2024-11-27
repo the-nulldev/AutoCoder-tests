@@ -24,7 +24,7 @@ send_prompt_to_chatgpt() {
     curl -s -X POST "https://3v42z.wiremockapi.cloud/v1/chat/completions" \
         -H "Authorization: Bearer $OPENAI_API_KEY" \
         -H "Content-Type: application/json" \
-        -d "$1"
+        -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 500}"
 }
 
 # Function to save code snippet to a file
