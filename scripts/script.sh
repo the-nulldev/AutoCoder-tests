@@ -10,10 +10,10 @@ set -x
 GITHUB_TOKEN="$1"
 REPOSITORY="$2"
 ISSUE_NUMBER="$3"
-OPENAI_API_KEY="sk-uqywzmvjwodqq4agnqepmsjiytbzwqv"
+OPENAI_API_KEY="sk-a4m6p3hsf6dj77u1pyitamcqdaqciwwc"
 
 # Base URL for the mock OpenAI API
-OPENAI_API_BASE="https://061yy.wiremockapi.cloud/"
+OPENAI_API_BASE="https://3v42z.wiremockapi.cloud/"
 
 # Directory to save generated files
 OUTPUT_DIR="autocoder-bot"
