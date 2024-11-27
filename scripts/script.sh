@@ -10,7 +10,7 @@ set -x
 GITHUB_TOKEN="$1"
 REPOSITORY="$2"
 ISSUE_NUMBER="$3"
-OPENAI_API_KEY="sk-a4m6p3hsf6dj77u1pyitamcqdaqciwwc"
+OPENAI_API_KEY="$4"
 
 # Base URL for the mock OpenAI API
 OPENAI_API_BASE="https://3v42z.wiremockapi.cloud/v1"
