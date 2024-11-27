@@ -3,7 +3,7 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-# Log each command for debugging purposes
+# log every command
 set -x
 
 # Get inputs from the environment
@@ -12,23 +12,24 @@ REPOSITORY="$2"
 ISSUE_NUMBER="$3"
 OPENAI_API_KEY="$4"
 
-
 # Function to fetch issue details from GitHub API
 fetch_issue_details() {
     curl -s -H "Authorization: token $GITHUB_TOKEN" \
          "https://api.github.com/repos/$REPOSITORY/issues/$ISSUE_NUMBER"
 }
 
-# Function to send a prompt to the ChatGPT model (OpenAI API)
+# Function to send prompt to the ChatGPT model (OpenAI API)
 send_prompt_to_chatgpt() {
-    curl -s -X POST "https://3v42z.wiremockapi.cloud/v1/chat/completions" \
-        -H "Authorization: Bearer $OPENAI_API_KEY" \
-        -H "Content-Type: application/json" \
-        -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 500}"
+curl -s -X POST "https://3v42z.wiremockapi.cloud/v1/chat/completions" \
+    -H "Authorization: Bearer $OPENAI_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d "{\"model\": \"gpt-3.5-turbo\", \"messages\": $MESSAGES_JSON, \"max_tokens\": 500}"
 }
 
-# Function to save code snippet to a file
+
+# Function to save code snippet to file
 save_to_file() {
+    #  the script will save the code snippets to files in a directory named "autocoder-bot" with the filename specified in the JSON object.
     local filename="autocoder-bot/$1"
     local code_snippet="$2"
 
@@ -46,27 +47,26 @@ if [[ -z "$ISSUE_BODY" ]]; then
     exit 1
 fi
 
-# Define instructions for GPT
+# Define clear, additional instructions for GPT regarding the response format
 INSTRUCTIONS="Based on the description below, please generate a JSON object where the keys represent file paths and the values are the corresponding code snippets for a production-ready application. The response should be a valid strictly JSON object without any additional formatting, markdown, or characters outside the JSON structure."
 
-# Combine instructions and issue body to form the full prompt
+# Combine the instructions with the issue body to form the full prompt
 FULL_PROMPT="$INSTRUCTIONS\n\n$ISSUE_BODY"
 
-# Prepare the JSON payload for the ChatGPT API
+# Prepare the messages array for the ChatGPT API, including the instructions
 MESSAGES_JSON=$(jq -n --arg body "$FULL_PROMPT" '[{"role": "user", "content": $body}]')
-PAYLOAD=$(jq -n --argjson messages "$MESSAGES_JSON" --arg model "gpt-3.5-turbo" --arg max_tokens 500 \
-    '{"model": $model, "messages": $messages, "max_tokens": ($max_tokens | tonumber)}')
 
 # Send the prompt to the ChatGPT model
-CHATGPT_RESPONSE=$(send_prompt_to_chatgpt "$PAYLOAD")
+RESPONSE=$(send_prompt_to_chatgpt)
 
-if [[ -z "$CHATGPT_RESPONSE" ]]; then
+if [[ -z "$RESPONSE" ]]; then
     echo "No response received from the OpenAI API."
     exit 1
 fi
 
 # Extract the JSON dictionary from the response
-FILES_JSON=$(echo "$CHATGPT_RESPONSE" | jq -e '.choices[0].message.content | fromjson' 2> /dev/null)
+# Make sure that the extracted content is valid JSON
+FILES_JSON=$(echo "$RESPONSE" | jq -e '.choices[0].message.content | fromjson' 2> /dev/null)
 
 if [[ -z "$FILES_JSON" ]]; then
     echo "No valid JSON dictionary found in the response or the response was not valid JSON. Please rerun the job."
