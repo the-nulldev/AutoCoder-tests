@@ -39,27 +39,3 @@ jobs:
       - name: List files in the artifact
         run: ls -R ./autocoder-artifact
         
-  notify-slack:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Send Slack Notification
-        run: |
-          #!/bin/bash
-          SLACK_WEBHOOK_URL=$SLACK_WEBHOOK_URL
-          MESSAGE="A new push has been made to the main branch!"
-          CHANNEL="#general"
-          PAYLOAD=$(cat <<EOF
-          {
-            "text": "$MESSAGE",
-            "channel": "$CHANNEL",
-            "username": "GitHub Actions",
-            "icon_emoji": ":rocket:"
-          }
-          EOF
-          )
-          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" "$SLACK_WEBHOOK_URL"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
